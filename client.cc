@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
+#include "signal.h"
 #include "client.h"
 using namespace std;
 
@@ -136,6 +137,7 @@ bool Client::Connect(void)
 
     thread listener(&ListenTo, this);
     listener.detach();
+    connect_state_ = true;
     return true;
 }
 
@@ -145,6 +147,8 @@ void Client::ListenTo(void)
     memset(buffer, 0, 256);
     while(true)
     {
+        if(!connect_state_)
+            break;
         ssize_t bytes = recv(sockfd_, buffer, 256, 0);
         switch(bytes)
         {
@@ -181,30 +185,35 @@ void Client::ListenTo(void)
     return;
 }
 
-int main(int argc, char **argv) 
+bool Client::Disconnect(void)
 {
-    // 创建套接字
-    int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if(connect_state_ == true)
+        close(sockfd_);
+    return;
+}
 
-    // 连接服务器
-    struct sockaddr_in serverAddress;
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-    serverAddress.sin_port = htons(8080);
-    connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
+bool Client::GetList(void)
+{
+    
+}
 
-    // 发送消息给服务器
-    const char* message = "Hello World";
-    send(clientSocket, message, strlen(message), 0);
-    std::cout << "Sent message to server: " << message << std::endl;
+bool Client::SendTo(void)
+{
 
-    // 接收服务器的响应
-    char buffer[256];
-    recv(clientSocket, buffer, sizeof(buffer), 0);
-    std::cout << "Received result from server: " << buffer << std::endl;
+}
 
-    // 关闭套接字
-    close(clientSocket);
+bool Client::GetTime(void)
+{
+    char gt = kTime;
+    if(send(sockfd_, &gt, 1, 0) == -1)
+        return false;
+    return true;
+}
 
-    return 0;
+bool Client::GetName(void)
+{
+    char gn = kName;
+    if(send(sockfd_, &gn, 1, 0) == -1)
+        return false;
+    return true;
 }

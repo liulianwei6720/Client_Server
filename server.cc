@@ -6,6 +6,8 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
+#include "server.h"
+#include "signal.h"
 
 // listen on port 5314
 int main(int argc, char **argv) 
