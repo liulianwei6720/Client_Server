@@ -18,7 +18,7 @@ private:
     bool GetList(void);
     bool SendTo(void);
     void Quit(void);
-    unordered_set<char *> clt_list_;
+    std::unordered_set<char *> clt_list_;
     bool state_;
     const char *ip_;
     int sockfd_;

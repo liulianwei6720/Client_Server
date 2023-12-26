@@ -12,6 +12,16 @@
 #include "client.h"
 using namespace std;
 
+enum Choice {
+    kConnect = 1,
+    kDisConnect, 
+    kGetTime,
+    kGetName,
+    kGetList,
+    kSendTo,
+    kQuit
+};
+
 Client::Client(void) : state_(false), ip_(nullptr), sockfd_(-1), port_(-1)
 {
     return;
