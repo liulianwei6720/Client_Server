@@ -11,7 +11,7 @@ public:
     void Work(void);
 
 private:
-    void set_runnning(bool state) { running_ = runnning; };
+    void set_runnning(bool state) { running_ = state; };
     bool runnning(void) const { return running_; }
     bool Connect(void);
     bool Disconnect(void);

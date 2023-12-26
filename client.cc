@@ -135,7 +135,7 @@ bool Client::Connect(void)
         return false;
     }
 
-    thread listener(&ListenTo, this);
+    thread listener(&Client::ListenTo, this);
     listener.detach();
     connect_state_ = true;
     return true;
@@ -189,17 +189,17 @@ bool Client::Disconnect(void)
 {
     if(connect_state_ == true)
         close(sockfd_);
-    return;
+    return true;
 }
 
 bool Client::GetList(void)
 {
-    
+    return true;
 }
 
 bool Client::SendTo(void)
 {
-
+    return true;
 }
 
 bool Client::GetTime(void)
@@ -216,4 +216,10 @@ bool Client::GetName(void)
     if(send(sockfd_, &gn, 1, 0) == -1)
         return false;
     return true;
+}
+
+int main(void)
+{
+    
+    return 0;
 }
