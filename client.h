@@ -21,6 +21,7 @@ private:
     bool SendTo(void);
     void Quit(void);
     void Prompt(void);
+    void ListenTo(void);
     std::unordered_set<char *> clt_list_;
     bool running_;
     bool connect_state_;

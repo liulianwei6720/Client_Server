@@ -80,12 +80,105 @@ void Client::Work(void)
             cout << "Sent...\n";
         break;
     case kGetName:
-        
+        if(!GetName())
+        {
+            cout << "Internal error!\n";
+            Quit();
+        }
+        else
+            cout << "Request Sent...\n";
+        break;
     case kGetList:
+        if(!GetList())
+        {
+            cout << "Internal error!\n";
+            Quit();
+        }
+        else
+            cout << "Request Sent...\n";
+        break;
     case kSendTo:
+        if(!SendTo())
+        {
+            cout << "Internal error!\n";
+            Quit();
+        }
+        else
+            cout << "Request Sent...\n";
+        break;
     default:
         cout << "Input wrong number!" << endl;
     }
+    return;
+}
+
+bool Client::Connect(void)
+{
+    sockfd_ = socket(AF_INET, SOCK_STREAM, 0);
+    addr.sin_family = AF_INET;
+    cout << "Input the ip address of server you want to connect to.\n";
+    string s_ip;
+    cin >> s_ip;
+    if(0 > inet_pton(AF_INET, s_ip.c_str(), &addr.sin_addr.s_addr))
+    {
+        cout << "Ip incorrect!\n";
+        return false;
+    }
+    cout << "Input the port number of server you want to connect to.\n";
+    s_ip.clear();
+    cin >> s_ip;
+    port_ = htons(atoi(s_ip.c_str()));
+    if(!connect(sockfd_, (sockaddr *)&addr, sizeof(addr)))
+    {
+        cout << "Connect error with the errcode: " << errno << endl;
+        return false;
+    }
+
+    thread listener(&ListenTo, this);
+    listener.detach();
+    return true;
+}
+
+void Client::ListenTo(void)
+{
+    char *buffer = (char *)malloc(256);
+    memset(buffer, 0, 256);
+    while(true)
+    {
+        ssize_t bytes = recv(sockfd_, buffer, 256, 0);
+        switch(bytes)
+        {
+        case -1:
+            cout << "Receive error with code: " << errno << endl;
+            break;
+        case 0:
+            cout << "Connect is closed.\n";
+            break;
+        default:
+            cout << "Receive from server, print it?(yes/no)\n";
+            string yn;
+            while(true)
+            {
+                cin >> yn;
+                if(yn == "yes" || yn == "y")
+                {
+                    int tail = 256;
+                    while(buffer[--tail] == 0);
+                    for(int i = 0; i <= tail; i++)
+                        putchar(buffer[i]);
+                    break;
+                }
+                else if(yn == "no" || yn == "n")
+                    break;
+                cout << "Input yes/no.\n";
+            }
+
+        }
+        memset(buffer, 0, 256);
+    }
+
+    free(buffer);
+    return;
 }
 
 int main(int argc, char **argv) 
