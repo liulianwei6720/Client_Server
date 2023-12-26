@@ -11,6 +11,8 @@ public:
     void Work(void);
 
 private:
+    void set_runnning(bool state) { running_ = runnning; };
+    bool runnning(void) const { return running_; }
     bool Connect(void);
     bool Disconnect(void);
     bool GetTime(void);
@@ -18,8 +20,10 @@ private:
     bool GetList(void);
     bool SendTo(void);
     void Quit(void);
+    void Prompt(void);
     std::unordered_set<char *> clt_list_;
-    bool state_;
+    bool running_;
+    bool connect_state_;
     const char *ip_;
     int sockfd_;
     int port_;
