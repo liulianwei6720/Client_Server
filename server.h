@@ -12,6 +12,18 @@
 #include <unistd.h>
 #include <unordered_map>
 
+struct ClientElement
+{
+    int socketfd_;
+    sockaddr_in addr;
+    ClientElement(int skt, sockaddr_in &ad)
+    {
+        socketfd_ = skt;
+        addr = ad;
+        return;
+    }
+};
+
 class Server
 {
 public:
@@ -27,8 +39,8 @@ private:
     void Serialize(size_t ptr, char *dst, size_t dst_size, sockaddr_in &skaddr, char sq);
     int sockfd_;
     sockaddr_in address_;
-    std::unordered_map<char, sockaddr_in> *clients_;
-    size_t seq_num;
+    std::unordered_map<char, ClientElement> *clients_; //seq |-> sockaddr
+    char seq_num_;
     std::mutex server_mutex_;
 };
 

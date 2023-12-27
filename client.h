@@ -1,13 +1,16 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include <unordered_set>
+#include <unordered_map>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include "signal.h"
+
 class Client
 {
 public:
     Client();
+    ~Client();
     void Work(void);
 
 private:
@@ -23,12 +26,16 @@ private:
     void Prompt(void);
     void ListenTo(void);
     void Deserialize(void);
-    std::unordered_set<char *> clt_list_;
+    void PrintCltList(void);
+    std::unordered_map<char, sockaddr_in> clt_list_;
     
+    mutex client_mutex_;
+    char *buffer_;
+    const size_t buffer_size_;
     bool running_;
     bool connect_state_;
     const char *ip_;
-    int sockfd_;
+    int sockfd_; // connect to server.
     int port_;
     sockaddr_in addr;
 };

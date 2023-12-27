@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "signal.h"
 #include "client.h"
@@ -23,8 +24,15 @@ enum Choice {
     kQuit
 };
 
-Client::Client(void) : running_(true), connect_state_(false), ip_(nullptr), sockfd_(-1), port_(-1)
+Client::Client(void) : running_(true), connect_state_(false), ip_(nullptr), sockfd_(-1), port_(-1), buffer_size_(1024)
 {
+    buffer_ = (char *)malloc(buffer_size_);
+    return;
+}
+
+Client::~Client(void)
+{
+    free(buffer_);
     return;
 }
 
@@ -100,10 +108,7 @@ void Client::Work(void)
         break;
     case kSendTo:
         if(!SendTo())
-        {
-            cout << "Internal error!\n";
-            Quit();
-        }
+            cout << "Sent failed!\n";
         else
             cout << "Request Sent...\n";
         break;
@@ -143,13 +148,12 @@ bool Client::Connect(void)
 
 void Client::ListenTo(void)
 {
-    char *buffer = (char *)malloc(256);
-    memset(buffer, 0, 256);
+    memset(buffer_, 0, 256);
     while(true)
     {
         if(!connect_state_)
             break;
-        ssize_t bytes = recv(sockfd_, buffer, 256, 0);
+        ssize_t bytes = recv(sockfd_, buffer_, 256, 0);
         switch(bytes)
         {
         case -1:
@@ -167,9 +171,9 @@ void Client::ListenTo(void)
                 if(yn == "yes" || yn == "y")
                 {
                     int tail = 256;
-                    while(buffer[--tail] == 0);
+                    while(buffer_[--tail] == 0);
                     for(int i = 0; i <= tail; i++)
-                        putchar(buffer[i]);
+                        putchar(buffer_[i]);
                     break;
                 }
                 else if(yn == "no" || yn == "n")
@@ -178,10 +182,8 @@ void Client::ListenTo(void)
             }
 
         }
-        memset(buffer, 0, 256);
+        memset(buffer_, 0, 256);
     }
-
-    free(buffer);
     return;
 }
 
@@ -192,19 +194,51 @@ bool Client::Disconnect(void)
     return true;
 }
 
+
 bool Client::GetList(void)
-{
+{// 接受数据写入map
     char gl = kClient;
     if(send(sockfd_, &gl, 1, 0) == -1)
         return false;
+    // write to ...    
     return true;
 }
 
+
+
 bool Client::SendTo(void)
 {
-    string s_ip;
-    cout << "Input the client you want to send message to: ";
-    cin >> s_ip;
+    if(!GetList())
+    {
+        cout << "Get client list error.\n";
+        return false;
+    }
+    cout << "Input the sequence number of client you want to send message to: (q to quit)";
+    PrintCltList();
+    while(true)
+    {
+        string in;
+        cin >> in;
+        if(in.empty())
+        {
+            cout << "Input a number or quit.\n";
+            continue;
+        }
+        char *err_ptr = 0;
+        char num = strtol(in.c_str(), &err_ptr, 10);
+        if(*err_ptr != 0)
+        {
+            if(in == "q")
+                return false;
+            cout << "Input a valid number!\n";
+        }
+        else
+            break;
+    }
+    // send signal to server.
+    char sd = kSend;
+    send(sockfd_, &sd, 1, 0);
+    
     char message[1024];
     int msg_ptr = 0;
     memset(message, 0, 1024);
@@ -219,7 +253,12 @@ bool Client::SendTo(void)
             state = 0;
         message[msg_ptr++] = ch;
     }
-    
+    ssize_t msg_size = strlen(message);
+    if(msg_size != send(sockfd_, message, msg_size, 0))
+    {
+        cout << "Send error in Client.\n";
+        return false;
+    }
     return true;
 }
 

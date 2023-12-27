@@ -5,7 +5,9 @@ enum Signal {
     kTime,
     kName,
     kClient,
-    kSend
+    kSend,
+    kACK
 };
+
 
 #endif
