@@ -194,11 +194,32 @@ bool Client::Disconnect(void)
 
 bool Client::GetList(void)
 {
+    char gl = kClient;
+    if(send(sockfd_, &gl, 1, 0) == -1)
+        return false;
     return true;
 }
 
 bool Client::SendTo(void)
 {
+    string s_ip;
+    cout << "Input the client you want to send message to: ";
+    cin >> s_ip;
+    char message[1024];
+    int msg_ptr = 0;
+    memset(message, 0, 1024);
+    cout << "Input the message you want to send to: (no more than 1k characters, input 2 enters to end input)\n";
+    char state = 0;
+    while(state != 2)
+    {
+        char ch = getchar();
+        if(ch == '\n')
+            state++;
+        else
+            state = 0;
+        message[msg_ptr++] = ch;
+    }
+    
     return true;
 }
 

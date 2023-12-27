@@ -22,7 +22,9 @@ private:
     void Quit(void);
     void Prompt(void);
     void ListenTo(void);
+    void Deserialize(void);
     std::unordered_set<char *> clt_list_;
+    
     bool running_;
     bool connect_state_;
     const char *ip_;
