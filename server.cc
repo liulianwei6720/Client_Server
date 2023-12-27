@@ -6,7 +6,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-
+#include <assert.h>
+#include <time.h>
 
 #include "server.h"
 #include "signal.h"
@@ -50,7 +51,60 @@ void Server::Work(void)
 
 void Server::ListenToClient(int skt)
 {
-    
+    char *buf = (char *)malloc(1024);
+    memset(buf, 0, 1024);
+    sprintf(buf, "Hello!\n");
+    ssize_t num_bytes = send(skt, buf, 1024, 0);
+    if(num_bytes < 0)
+    {
+        cout << "Fatal error with errcode: " << errno << endl;
+        exit(0);
+    }
+    memset(buf, 0, 1024);
+    char sig = 0;
+    while(true)
+    {
+        num_bytes = recv(skt, &sig, 1, 0);
+        if(num_bytes < 0)
+        {
+            cout << "Fatal error with errcode: " << errno << endl;
+            exit(0);
+        }   
+        assert(num_bytes == 1);
+        switch(sig)
+        {
+        case kTime:
+            time_t current_time = time(nullptr);
+            sprintf(buf, "%s", ctime(&current_time));
+            num_bytes = send(skt, buf, 1024, strlen(buf));
+            if(num_bytes < 0)
+                cout << "Fatal error with errcode: " << errno << endl;
+            break;   
+        case kName: 
+            if(!GetComputerName(buf, 1024))
+                cout << "Get host name error with code: " << errno << endl;
+            break;
+        case kClient:
+
+        case kSend:
+        default:
+
+        }
+        memset(buf, 0, 1024);
+    }
+}
+
+bool Server::GetClients(char *buf, size_t buf_size)
+{
+    for(auto client = clients_->begin(); client != clients_->end(); clients_++)
+    {
+        
+    }
+}
+
+bool Server::GetComputerName(char *buf, size_t buf_size)
+{
+    return !gethostname(buf, buf_size);  
 }
 
 // listen on port 5314

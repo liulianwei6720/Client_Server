@@ -18,12 +18,11 @@ public:
     ~Server(void);
     void Work(void);
 private:
-    char *GetComputerName(void);
-    char *GetTime(void);
-    void GetClients(void);
-    void SendTo(void);
-    void Accept(void);
-    void ListenToClient(int socket);
+    bool GetComputerName(char *buf, size_t buf_size);
+    bool GetClients(char *buf, size_t buf_size);
+    void SendTo(int skt);
+    void ListenToClient(int skt);
+    void DeleteClient(int skt);
     int sockfd_;
     sockaddr_in address_;
     std::unordered_map<int, sockaddr_in> *clients_;
