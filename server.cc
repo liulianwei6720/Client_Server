@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cstdlib>
-#include <thread>
 #include <unordered_map>
 #include <cstring>
 #include <sys/socket.h>
@@ -14,9 +13,9 @@
 
 using namespace std;
 
-Server::Server(void)
+Server::Server(void) : seq_num(0)
 {
-    clients_ = new unordered_map<int, sockaddr_in> ();
+    clients_ = new unordered_map<char, sockaddr_in> ();
     sockfd_ = socket(AF_INET, SOCK_STREAM, 0);
     address_.sin_family = AF_INET;
     address_.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -42,7 +41,9 @@ void Server::Work(void)
     {
         memset(&client_socket, 0, sizeof(client_socket));
         int skt = accept(sockfd_, (sockaddr *)&client_socket, &client_len);
-        clients_->insert(make_pair(skt, client_socket));
+        server_mutex_.lock();
+        clients_->insert(make_pair(++seq_num, client_socket));
+        server_mutex_.unlock();
         thread serve(&Server::ListenToClient, this, skt);
         serve.detach();
     }
@@ -78,14 +79,22 @@ void Server::ListenToClient(int skt)
             sprintf(buf, "%s", ctime(&current_time));
             num_bytes = send(skt, buf, 1024, strlen(buf));
             if(num_bytes < 0)
-                cout << "Fatal error with errcode: " << errno << endl;
+                cout << "Send time error with errcode: " << errno << endl;
             break;   
         case kName: 
             if(!GetComputerName(buf, 1024))
                 cout << "Get host name error with code: " << errno << endl;
+            num_bytes = send(skt, buf, 1024, strlen(buf));
+            if(num_bytes)
+                cout << "Send name error with code: " << errno << endl;
             break;
         case kClient:
-
+            if(!GetClients(buf, 1024))
+                cout << "Internal error!\n";
+            num_bytes = send(skt, buf, 1024, 0);
+            if(num_bytes)
+                cout << "Send clients error with code: " << errno << endl;
+            break;
         case kSend:
         default:
 
@@ -94,12 +103,36 @@ void Server::ListenToClient(int skt)
     }
 }
 
+void Server::Serialize(size_t ptr, char *dst, size_t dst_size, sockaddr_in &skaddr, char seq)
+{
+    dst[ptr++] = seq;
+    dst[ptr] = skaddr.sin_addr.s_addr;
+    ptr += 4;
+    dst[ptr] = skaddr.sin_port;
+    ptr += 2;
+    dst[ptr] = 0;
+    return;
+}
+
+// seq ip port end
+// 1   4   2    1
 bool Server::GetClients(char *buf, size_t buf_size)
 {
+    size_t ptr = 0;
+    size_t num_clients = 0;
     for(auto client = clients_->begin(); client != clients_->end(); clients_++)
     {
-        
+        if(ptr + 8 < buf_size)
+            Serialize(ptr, buf, buf_size, client->second, client->first);
+        else
+        {
+            cout << "Not enough buffer size.\n";
+            return false;
+        }
+        ptr += 8;
+        num_clients++;
     }
+    return true;
 }
 
 bool Server::GetComputerName(char *buf, size_t buf_size)
