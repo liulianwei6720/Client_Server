@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 #include <thread>
 #include <unordered_map>
 #include <cstring>
@@ -6,8 +7,46 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
+
 #include "server.h"
 #include "signal.h"
+
+using namespace std;
+
+Server::Server(void)
+{
+    clients_ = new unordered_map<int, sockaddr_in> ();
+    sockfd_ = socket(AF_INET, SOCK_STREAM, 0);
+    address_.sin_family = AF_INET;
+    address_.sin_addr.s_addr = inet_addr("127.0.0.1");
+    address_.sin_port = htons(5314);
+
+    bind(sockfd_, (sockaddr *)&address_, sizeof(address_));
+
+    listen(sockfd_, 10);
+    return;
+}
+
+Server::~Server(void)
+{
+    delete clients_;
+    return;
+}
+
+void Server::Work(void)
+{
+    sockaddr_in client_socket;
+    socklen_t client_len = sizeof(client_socket);
+    while(true)
+    {
+        memset(&client_socket, 0, sizeof(client_socket));
+        int skt = accept(sockfd_, (sockaddr *)&client_socket, &client_len);
+        clients_->insert(make_pair(skt, client_socket));
+        thread serve(&Server::ListenToClient, this);
+        serve.detach();
+        
+    }
+}
 
 // listen on port 5314
 int main(int argc, char **argv) 
