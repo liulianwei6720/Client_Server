@@ -42,10 +42,15 @@ void Server::Work(void)
         memset(&client_socket, 0, sizeof(client_socket));
         int skt = accept(sockfd_, (sockaddr *)&client_socket, &client_len);
         clients_->insert(make_pair(skt, client_socket));
-        thread serve(&Server::ListenToClient, this);
+        thread serve(&Server::ListenToClient, this, skt);
         serve.detach();
-        
     }
+    return;
+}
+
+void Server::ListenToClient(int skt)
+{
+    
 }
 
 // listen on port 5314

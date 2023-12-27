@@ -23,7 +23,7 @@ private:
     void GetClients(void);
     void SendTo(void);
     void Accept(void);
-    void ListenToClient(void);
+    void ListenToClient(int socket);
     int sockfd_;
     sockaddr_in address_;
     std::unordered_map<int, sockaddr_in> *clients_;
