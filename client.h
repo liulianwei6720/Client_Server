@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <mutex>
 #include "signal.h"
 
 class Client
@@ -29,7 +30,7 @@ private:
     void PrintCltList(void);
     std::unordered_map<char, sockaddr_in> clt_list_;
     
-    mutex client_mutex_;
+    std::mutex client_mutex_;
     char *buffer_;
     const size_t buffer_size_;
     bool running_;

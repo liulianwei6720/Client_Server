@@ -98,7 +98,7 @@ void Server::ListenToClient(int skt)
         case kSend:
             send(skt, "Give me the seq number.", strlen("Give me the seq number."), 0);
             num_bytes = recv(skt, buf, 1024, 0);
-
+            break;
         default:
             cout << "Signal incorrect.\n";
             break;
