@@ -61,7 +61,7 @@ void Client::Work(void)
     Prompt();
     Choice choice;
     
-    choice = (Choice)getchar();
+    choice = (Choice)(getchar() - '0');
     switch(choice)
     {
     case kConnect:
@@ -200,7 +200,7 @@ bool Client::GetList(void)
     char gl = kClient;
     if(send(sockfd_, &gl, 1, 0) == -1)
         return false;
-    // write to ...    
+    // TODO write to clt_list_...    
     return true;
 }
 
@@ -278,8 +278,23 @@ bool Client::GetName(void)
     return true;
 }
 
+void Client::Deserialize(void)
+{
+    // TODO decode byte stream rcv from server and store to `clt_list_`
+    return;
+}
+
+void Client::PrintCltList(void)
+{
+    // TODO print control list cache
+    return;
+}
+
 int main(void)
 {
-    
+    Client *clt = new Client();
+    while(!clt->QuitProg())
+        clt->Work();
+    delete clt;
     return 0;
 }

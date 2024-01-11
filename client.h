@@ -13,6 +13,7 @@ public:
     Client();
     ~Client();
     void Work(void);
+    bool QuitProg(void) { return !running_; };
 
 private:
     void set_runnning(bool state) { running_ = state; };
