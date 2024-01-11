@@ -42,9 +42,10 @@ void Client::Prompt(void)
     cout << "1. Connect to a server with ipv4 address and port.\n";
     cout << "2. Disconnect from a server.\n";
     cout << "3. Get the time from server.\n";
-    cout << "4. Get the other clients that connected to the server.\n";
-    cout << "5. Send message to another client connected to the server.\n";
-    cout << "6. Quit the program.\n";
+    cout << "4. Get the name of the server.\n";
+    cout << "5. Get the other clients that connected to the server.\n";
+    cout << "6. Send message to another client connected to the server.\n";
+    cout << "7. Quit the program.\n";
     return;
 }
 
@@ -111,6 +112,9 @@ void Client::Work(void)
             cout << "Sent failed!\n";
         else
             cout << "Request Sent...\n";
+        break;
+    case kQuit:
+        Quit();
         break;
     default:
         cout << "Input wrong number!" << endl;
