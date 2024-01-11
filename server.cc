@@ -63,6 +63,7 @@ void Server::ListenToClient(int skt)
     }
     memset(buf, 0, 1024);
     char sig = 0;
+    time_t current_time;
     while(true)
     {// recv signal.
         num_bytes = recv(skt, &sig, 1, 0);
@@ -75,7 +76,7 @@ void Server::ListenToClient(int skt)
         switch(sig)
         {
         case kTime:
-            time_t current_time = time(nullptr);
+            current_time = time(nullptr);
             sprintf(buf, "%s", ctime(&current_time));
             num_bytes = send(skt, buf, 1024, strlen(buf));
             if(num_bytes < 0)
@@ -141,6 +142,16 @@ bool Server::GetClients(char *buf, size_t buf_size)
     return true;
 }
 
+void Server::SendTo(int skt)
+{
+    return;
+}
+
+void Server::DeleteClient(int skt)
+{
+    return;
+}
+
 bool Server::GetComputerName(char *buf, size_t buf_size)
 {
     return !gethostname(buf, buf_size);  
@@ -149,6 +160,7 @@ bool Server::GetComputerName(char *buf, size_t buf_size)
 // listen on port 5314
 int main(int argc, char **argv) 
 {
-
+    auto svr = new Server();
+    svr->Work();
     return 0;
 }
